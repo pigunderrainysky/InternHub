@@ -9,16 +9,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY app/ ./app/
-COPY alembic.ini .
-COPY alembic/ ./alembic/
-
-# Run database migrations then start server
-COPY entrypoint.sh .
+COPY backend/app/ ./app/
+COPY backend/alembic.ini .
+COPY backend/alembic/ ./alembic/
+COPY backend/entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
