@@ -1,5 +1,6 @@
 """FastAPI application entry point."""
 
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -47,6 +48,52 @@ app.include_router(subscriptions.router)
 @app.get("/api/health")
 def health_check():
     return {"status": "ok", "version": "0.1.0"}
+
+
+@app.post("/api/admin/scrape")
+async def trigger_scrape():
+    """Trigger a full scrape run across all sources."""
+    from .database import SessionLocal
+    from .services.scraper_service import upsert_job
+    from .scraper.shixiseng import ShixisengScraper
+    from .scraper.niuke import NiukeScraper
+    from .scraper.github_jobs import GitHubJobsScraper
+
+    scrapers = [
+        ShixisengScraper(max_pages=3),
+        NiukeScraper(max_pages=3),
+        GitHubJobsScraper(),
+    ]
+
+    results = {}
+    total = 0
+
+    for scraper in scrapers:
+        name = scraper.source
+        try:
+            raw = await scraper.fetch()
+            parsed = scraper.parse(raw)
+        except Exception as e:
+            results[name] = {"fetched": 0, "upserted": 0, "error": str(e)}
+            continue
+
+        db = SessionLocal()
+        new_count = 0
+        try:
+            for job_data in parsed:
+                if upsert_job(db, job_data):
+                    new_count += 1
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            results[name] = {"fetched": len(raw), "upserted": 0, "error": str(e)}
+        finally:
+            db.close()
+
+        results[name] = {"fetched": len(raw), "upserted": new_count}
+        total += new_count
+
+    return {"status": "ok", "total_upserted": total, "sources": results}
 
 
 # ── Static files (frontend build output) ──
