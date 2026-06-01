@@ -1,24 +1,33 @@
-# InternHub Backend — Railway deployment
-FROM python:3.12-slim
+# ─── Stage 1: Build Frontend ───
+FROM node:22-alpine AS frontend
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
 
+# ─── Stage 2: Python Backend + Frontend Static ───
+FROM python:3.12-slim
 WORKDIR /app
 
-# Install system dependencies
+# System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev gcc && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Python dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Backend code
 COPY backend/app/ ./app/
 COPY backend/alembic.ini .
 COPY backend/alembic/ ./alembic/
 COPY backend/entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
-EXPOSE 8000
+# Frontend build output
+COPY --from=frontend /frontend/dist/ ./static/
 
+EXPOSE 8000
 ENTRYPOINT ["./entrypoint.sh"]
