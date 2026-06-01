@@ -96,6 +96,38 @@ async def trigger_scrape():
     return {"status": "ok", "total_upserted": total, "sources": results}
 
 
+@app.post("/api/admin/debug-scrape/{source}")
+async def debug_scrape(source: str):
+    """Debug: fetch raw data from one source and show samples."""
+    from .scraper.shixiseng import ShixisengScraper
+    from .scraper.niuke import NiukeScraper
+    from .scraper.github_jobs import GitHubJobsScraper
+
+    scraper_map = {
+        "shixiseng": ShixisengScraper(max_pages=1),
+        "niuke": NiukeScraper(max_pages=1),
+        "github": GitHubJobsScraper(),
+    }
+
+    scraper = scraper_map.get(source)
+    if not scraper:
+        return {"error": f"Unknown source: {source}", "available": list(scraper_map.keys())}
+
+    raw = await scraper.fetch()
+    parsed = scraper.parse(raw)
+
+    return {
+        "source": source,
+        "raw_count": len(raw),
+        "parsed_count": len(parsed),
+        "raw_sample": raw[:3],
+        "parsed_sample": [
+            {k: v for k, v in j.items() if k != "description"}
+            for j in parsed[:3]
+        ],
+    }
+
+
 # ── Static files (frontend build output) ──
 app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
 
