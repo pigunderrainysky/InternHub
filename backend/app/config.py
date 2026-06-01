@@ -11,10 +11,11 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:54322/internhub"
 
-    @field_validator("DATABASE_URL", mode="after")
+    @field_validator("DATABASE_URL", mode="before")
     @classmethod
-    def check_database_url(cls, v: str) -> str:
-        """Validate and log DATABASE_URL (password masked)."""
+    def clean_database_url(cls, v: str) -> str:
+        """Strip whitespace and validate DATABASE_URL."""
+        v = v.strip()
         if not v.startswith("postgresql://") and not v.startswith("postgres://"):
             raise ValueError(
                 f"DATABASE_URL must start with postgresql:// or postgres://, got: {v[:50]}..."
