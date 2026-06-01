@@ -44,6 +44,11 @@ app.include_router(applications.router)
 app.include_router(subscriptions.router)
 
 
+@app.get("/")
+def root():
+    return {"status": "ok", "version": "0.1.0"}
+
+
 @app.get("/api/health")
 def health_check():
     return {"status": "ok", "version": "0.1.0"}
