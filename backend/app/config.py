@@ -1,6 +1,8 @@
 """Application settings loaded from environment variables."""
 
+import re
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -8,6 +10,19 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:54322/internhub"
+
+    @field_validator("DATABASE_URL", mode="after")
+    @classmethod
+    def check_database_url(cls, v: str) -> str:
+        """Validate and log DATABASE_URL (password masked)."""
+        if not v.startswith("postgresql://") and not v.startswith("postgres://"):
+            raise ValueError(
+                f"DATABASE_URL must start with postgresql:// or postgres://, got: {v[:50]}..."
+            )
+        # Print masked URL for debugging
+        masked = re.sub(r"://([^:]+):([^@]+)@", r"://\1:***@", v)
+        print(f"[Config] DATABASE_URL = {masked}")
+        return v
 
     # JWT
     JWT_SECRET_KEY: str = "change-me-in-production-use-a-random-64-char-string"
