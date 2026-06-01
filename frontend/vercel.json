@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://internhub.up.railway.app/api/:path*"
+      "destination": "https://internhub-production-6c4c.up.railway.app/api/:path*"
     }
   ],
   "headers": [
