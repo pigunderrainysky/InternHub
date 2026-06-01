@@ -32,7 +32,7 @@ export default function ApplicationForm({
   const [notes, setNotes] = useState(application?.notes || '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Reset form on open
   useEffect(() => {
