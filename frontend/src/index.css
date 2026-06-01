@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/* Apple-style design tokens */
+@theme {
+  --color-apple-gray: #F5F5F7;
+  --color-apple-blue: #0071E3;
+  --color-apple-blue-light: #E8F4FD;
+  --color-apple-black: #1D1D1F;
+  --color-apple-gray-text: #86868B;
+  --color-apple-green: #34C759;
+  --color-apple-orange: #FF9500;
+  --color-apple-red: #FF3B30;
+}
+
+/* Base styles */
+body {
+  margin: 0;
+  font-family: "SF Pro Text", "PingFang SC", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F5F5F7;
+  color: #1D1D1F;
+}
+
+/* SF Pro Display for headings */
+h1, h2, h3, h4, .font-display {
+  font-family: "SF Pro Display", "PingFang SC", system-ui, -apple-system, sans-serif;
+}
+
+/* SF Mono for code */
+code, pre, .font-mono {
+  font-family: "SF Mono", Monaco, monospace;
+}
